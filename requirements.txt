@@ -1,0 +1,11 @@
+python-dotenv
+langfuse
+ollama
+langchain
+langchain-community
+langchain_postgres
+bs4
+pypdf
+psycopg-binary
+psycopg2-binary
+pgvector
