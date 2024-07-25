@@ -1,5 +1,6 @@
-from dotenv import load_dotenv
 import os
+import uuid
+from dotenv import load_dotenv
 
 from langchain_community.llms import Ollama
 from langchain_community.document_loaders import PyPDFLoader
@@ -31,7 +32,7 @@ def load_environment_variables():
 
 # Initialize CallbackHandler
 
-def initialize_callback_handler(secret_key, public_key, langfuse_host, langfuse_tags_environment, langfuse_tags_application_version):
+def initialize_callback_handler(secret_key, public_key, langfuse_host, langfuse_tags_environment, langfuse_tags_application_version, session_id):
     langfuse_handler = CallbackHandler(
       secret_key=secret_key,
       public_key=public_key,
@@ -39,7 +40,8 @@ def initialize_callback_handler(secret_key, public_key, langfuse_host, langfuse_
       tags=[
         langfuse_tags_environment,
         langfuse_tags_application_version
-      ]
+      ],
+      session_id=session_id
     )
     return langfuse_handler
 
@@ -145,8 +147,9 @@ def create_chain(prompt_template, model):
 # Initiate the application
 
 def main(question = "What science is being conducted during the mission?"):
+  session_id = str(uuid.uuid4())
   model_name, host_service_url, secret_key, public_key, langfuse_host, langfuse_tags_environment, langfuse_tags_application_version  = load_environment_variables()
-  langfuse_handler = initialize_callback_handler(secret_key, public_key, langfuse_host, langfuse_tags_environment, langfuse_tags_application_version)
+  langfuse_handler = initialize_callback_handler(secret_key, public_key, langfuse_host, langfuse_tags_environment, langfuse_tags_application_version, session_id)
 
   documents = load_documents()
   docs = split_documents(documents)
@@ -161,7 +164,7 @@ def main(question = "What science is being conducted during the mission?"):
   chain = create_chain(prompt_template, model) 
   result = chain.invoke({"context": relevant_docs, "question": question}, config=config)
   
-  print(result)
+  print('ANSWER: ', result)
 
 if __name__ == "__main__":
     main()
