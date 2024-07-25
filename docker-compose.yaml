@@ -1,0 +1,58 @@
+services:
+  app:
+    container_name: app
+    build: .
+    volumes:
+      - ./app:/usr/app
+    env_file:
+      - .env
+    environment:
+      - HOST_SERVICE_URL=host.docker.internal:11434
+    depends_on:
+      - langfuse-server
+    networks:
+      - ragappnetwork
+  db:
+    container_name: db
+    image: ankane/pgvector
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_DB=${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    networks:
+      - ragappnetwork
+  langfuse-server:
+    container_name: langfuse-server
+    image: langfuse/langfuse:2
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '3000:3000'
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@db:5432/langfuse
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - SALT=${LANGFUSE_SALT}
+      - NEXTAUTH_URL=http://${LANGFUSE_HOST}:3000
+      - LANGFUSE_HOST=${LANGFUSE_HOST}
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+      - TELEMETRY_ENABLED=${TELEMETRY_ENABLED:-true}
+      - LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES=${LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES:-false}
+    networks:
+      - ragappnetwork
+
+networks:
+  ragappnetwork:
+    driver: bridge
