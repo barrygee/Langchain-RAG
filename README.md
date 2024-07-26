@@ -1,6 +1,6 @@
 # Langchain Retrieval Augmented Generation (RAG) application
 
-- This application containerises a Langchain RAG application using Docker compose. 
+- This application includes a containerised Langchain RAG application.
 - Vector embeddings are stored in a locally running containerised PGVector database.
 - LLM inputs and outputs, traces and prompts are monitored in a locally running containerised Langfuse installation.
 - The application uses locally running LLMs made available via Ollama.
@@ -9,6 +9,11 @@
 ## Setup
 
 ### Ollama
+
+Download and install Ollama
+
+https://ollama.com
+
 
 Download the required embedding model
 ```
